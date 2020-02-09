@@ -9,6 +9,8 @@ from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text, python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
+from django_cryptography.fields import encrypt
+
 import allauth.app_settings
 from allauth.account.models import EmailAddress
 from allauth.account.utils import get_next_redirect_url, setup_user_email
@@ -17,7 +19,8 @@ from allauth.utils import get_user_model
 from . import app_settings, providers
 from ..utils import get_request_param
 from .adapter import get_adapter
-from .fields import JSONField
+#from .fields import JSONField
+from jsonfield import JSONField
 
 
 class SocialAppManager(models.Manager):
@@ -45,17 +48,17 @@ class SocialApp(models.Model):
                                 choices=providers.registry.as_choices())
     name = models.CharField(verbose_name=_('name'),
                             max_length=40)
-    client_id = models.CharField(verbose_name=_('client id'),
+    client_id = encrypt(models.CharField(verbose_name=_('client id'),
                                  max_length=2000,
-                                 help_text=_('App ID, or consumer key'))
-    secret = models.CharField(verbose_name=_('secret key'),
+                                 help_text=_('App ID, or consumer key')))
+    secret = encrypt(models.CharField(verbose_name=_('secret key'),
                               max_length=2000,
                               help_text=_('API secret, client secret, or'
-                              ' consumer secret'))
-    key = models.CharField(verbose_name=_('key'),
+                              ' consumer secret')))
+    key = encrypt(models.CharField(verbose_name=_('key'),
                            max_length=2000,
                            blank=True,
-                           help_text=_('Key'))
+                           help_text=_('Key')))
     # Most apps can be used across multiple domains, therefore we use
     # a ManyToManyField. Note that Facebook requires an app per domain
     # (unless the domains share a common base name).
@@ -99,7 +102,7 @@ class SocialAccount(models.Model):
                                       auto_now=True)
     date_joined = models.DateTimeField(verbose_name=_('date joined'),
                                        auto_now_add=True)
-    extra_data = JSONField(verbose_name=_('extra data'), default=dict)
+    extra_data = encrypt(JSONField(verbose_name=_('extra data'), default=dict))
 
     class Meta:
         unique_together = ('provider', 'uid')
@@ -129,15 +132,15 @@ class SocialAccount(models.Model):
 class SocialToken(models.Model):
     app = models.ForeignKey(SocialApp, on_delete=models.CASCADE)
     account = models.ForeignKey(SocialAccount, on_delete=models.CASCADE)
-    token = models.TextField(
+    token = encrypt(models.TextField(
         verbose_name=_('token'),
         help_text=_(
-            '"oauth_token" (OAuth1) or access token (OAuth2)'))
-    token_secret = models.TextField(
+            '"oauth_token" (OAuth1) or access token (OAuth2)')))
+    token_secret = encrypt(models.TextField(
         blank=True,
         verbose_name=_('token secret'),
         help_text=_(
-            '"oauth_token_secret" (OAuth1) or refresh token (OAuth2)'))
+            '"oauth_token_secret" (OAuth1) or refresh token (OAuth2)')))
     expires_at = models.DateTimeField(blank=True, null=True,
                                       verbose_name=_('expires at'))
 
