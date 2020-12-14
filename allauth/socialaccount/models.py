@@ -285,7 +285,11 @@ class SocialLogin(object):
             pass
 
     def get_redirect_url(self, request):
-        url = self.state.get('next')
+        if self.state:
+            url = self.state.get('next')
+        else:
+            from django.conf import settings
+            url = settings.LOGIN_REDIRECT_URL
         return url
 
     @classmethod

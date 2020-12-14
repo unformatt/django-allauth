@@ -48,7 +48,10 @@ class OAuth2Adapter(object):
         raise NotImplementedError
 
     def get_callback_url(self, request, app):
-        callback_url = reverse(self.provider_id + "_callback")
+        callback_url_name = self.settings.get('callback_url_name')
+        if not callback_url_name:
+            callback_url_name = self.provider_id + '_callback'
+        callback_url = reverse(callback_url_name)
         protocol = self.redirect_uri_protocol
         return build_absolute_uri(request, callback_url, protocol)
 
