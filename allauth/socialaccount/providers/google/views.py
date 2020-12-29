@@ -1,5 +1,6 @@
 import requests
 
+from allauth.socialaccount import app_settings
 from allauth.socialaccount.providers.oauth2.views import (
     OAuth2Adapter,
     OAuth2CallbackView,
@@ -11,6 +12,7 @@ from .provider import GoogleProvider
 
 class GoogleOAuth2Adapter(OAuth2Adapter):
     provider_id = GoogleProvider.id
+    settings = app_settings.PROVIDERS.get(provider_id, {})
     access_token_url = 'https://accounts.google.com/o/oauth2/token'
     authorize_url = 'https://accounts.google.com/o/oauth2/auth'
     profile_url = 'https://www.googleapis.com/oauth2/v1/userinfo'

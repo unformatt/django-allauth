@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 
+from allauth.socialaccount import app_settings
 from allauth.exceptions import ImmediateHttpResponse
 from allauth.socialaccount import providers
 from allauth.socialaccount.helpers import (
@@ -34,9 +35,13 @@ class OAuth2Adapter(object):
     scope_delimiter = ' '
     basic_auth = False
     headers = None
+    settings = None
+    provider_id = None
 
     def __init__(self, request):
         self.request = request
+        if self.settings is None and self.provider_id:
+            self.settings = app_settings.PROVIDERS.get(self.provider_id, {})
 
     def get_provider(self):
         return providers.registry.by_id(self.provider_id, self.request)
@@ -125,17 +130,22 @@ class OAuth2CallbackView(OAuth2View):
                 request,
                 self.adapter.provider_id,
                 error=error)
+        print "CALLABCK VIEW"
         app = self.adapter.get_provider().get_app(self.request)
         client = self.get_client(request, app)
         try:
             access_token = client.get_access_token(request.GET['code'])
+            print "access_token:",access_token
             token = self.adapter.parse_token(access_token)
+            print "token:",token
             token.app = app
             login = self.adapter.complete_login(request,
                                                 app,
                                                 token,
                                                 response=access_token)
             login.token = token
+            print "login:",login
+            print "self.adapter.supports_state:",self.adapter.supports_state
             if self.adapter.supports_state:
                 login.state = SocialLogin \
                     .verify_and_unstash_state(
@@ -143,11 +153,14 @@ class OAuth2CallbackView(OAuth2View):
                         get_request_param(request, 'state'))
             else:
                 login.state = SocialLogin.unstash_state(request)
+            print "HELLO"
             return complete_social_login(request, login)
         except (PermissionDenied,
                 OAuth2Error,
                 RequestException,
                 ProviderException) as e:
+            print "e:",e
+            # import ipdb; ipdb.set_trace(context=5)
             return render_authentication_error(
                 request,
                 self.adapter.provider_id,
