@@ -26,14 +26,13 @@ class GitHubOAuth2Adapter(OAuth2Adapter):
     emails_url = '{0}/user/emails'.format(api_url)
 
     def complete_login(self, request, app, token, **kwargs):
-        params = {'access_token': token.token}
-        resp = requests.get(self.profile_url, params=params)
+        headers = {"Authorization": "token {}".format(token.token)}
+        resp = requests.get(self.profile_url, headers=headers)
+        resp.raise_for_status()
         extra_data = resp.json()
-        if app_settings.QUERY_EMAIL and not extra_data.get('email'):
-            extra_data['email'] = self.get_email(token)
-        return self.get_provider().sociallogin_from_response(
-            request, extra_data
-        )
+        if app_settings.QUERY_EMAIL and not extra_data.get("email"):
+            extra_data["email"] = self.get_email(headers)
+        return self.get_provider().sociallogin_from_response(request, extra_data)
 
     def get_email(self, token):
         email = None
