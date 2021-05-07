@@ -34,21 +34,20 @@ class GitHubOAuth2Adapter(OAuth2Adapter):
             extra_data["email"] = self.get_email(headers)
         return self.get_provider().sociallogin_from_response(request, extra_data)
 
-    def get_email(self, token):
+    def get_email(self, headers):
         email = None
-        params = {'access_token': token.token}
-        resp = requests.get(self.emails_url, params=params)
+        resp = requests.get(self.emails_url, headers=headers)
+        resp.raise_for_status()
         emails = resp.json()
         if resp.status_code == 200 and emails:
             email = emails[0]
             primary_emails = [
-                e for e in emails
-                if not isinstance(e, dict) or e.get('primary')
+                e for e in emails if not isinstance(e, dict) or e.get("primary")
             ]
             if primary_emails:
                 email = primary_emails[0]
             if isinstance(email, dict):
-                email = email.get('email', '')
+                email = email.get("email", "")
         return email
 
 
