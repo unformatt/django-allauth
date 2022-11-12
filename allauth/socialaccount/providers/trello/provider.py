@@ -15,6 +15,8 @@ class TrelloProvider(OAuthProvider):
     name = 'Trello'
     account_class = TrelloAccount
 
+    should_append_params_to_token_request_url = False
+
     def get_default_scope(self):
         return ['read']
 

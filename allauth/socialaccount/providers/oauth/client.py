@@ -5,7 +5,7 @@ Inspired by:
     http://github.com/facebook/tornado/blob/master/tornado/auth.py
 """
 
-import requests
+import requests, logging
 
 from django.http import HttpResponseRedirect
 from django.utils.http import urlencode
@@ -15,6 +15,9 @@ from requests_oauthlib import OAuth1
 
 from allauth.compat import parse_qsl, urlparse
 from allauth.utils import get_request_param
+
+
+_log = logging.getLogger(__name__)
 
 
 def get_token_prefix(url):
@@ -65,7 +68,7 @@ class OAuthClient(object):
         """
         if self.request_token is None:
             get_params = {}
-            if self.parameters:
+            if self.parameters and self.provider.should_append_params_to_token_request_url:
                 get_params.update(self.parameters)
             get_params['oauth_callback'] \
                 = self.request.build_absolute_uri(self.callback_url)
@@ -74,6 +77,7 @@ class OAuthClient(object):
                            client_secret=self.consumer_secret)
             response = requests.post(url=rt_url, auth=oauth)
             if response.status_code not in [200, 201]:
+                _log.error('%s: %s' % (rt_url, response.text))
                 raise OAuthError(
                     _('Invalid response while obtaining request token'
                       ' from "%s".') % get_token_prefix(

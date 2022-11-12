@@ -7,6 +7,8 @@ from allauth.socialaccount.providers.base import Provider
 
 class OAuthProvider(Provider):
 
+    should_append_params_to_token_request_url = True
+
     def get_login_url(self, request, **kwargs):
         url = reverse(self.id + "_login")
         if kwargs:
