@@ -129,7 +129,7 @@ METADATA = dict(
     tests_require=test_requirements,
     install_requires=['Django >= 1.11',
                       openid_package,
-                      'requests-oauthlib >= 0.3.0',
+                      'requests-oauthlib == 1.3.1',
                       "requests",
                       "django-cryptography >= 0.3",
                       "jsonfield >= 2.0.2"],
