@@ -9,7 +9,7 @@ from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text, python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
-from django_cryptography.fields import encrypt
+from allauth.fields import encrypt
 
 import allauth.app_settings
 from allauth.account.models import EmailAddress
